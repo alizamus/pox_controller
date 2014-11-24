@@ -25,8 +25,7 @@ def block_handler (event):
   if tcpp.srcport in block_ports or tcpp.dstport in block_ports:
     # Halt the event, stopping l2_learning from seeing it
     # (and installing a table entry for it)
-    core.getLogger("blocker").debug("Blocked TCP %s <-> %s",
-                                    tcpp.srcport, tcpp.dstport)
+    core.getLogger("blocker").debug("Blocked TCP %s <-> %s", tcpp.srcport, tcpp.dstport)
     event.halt = True
  
 def unblock (*ports):
