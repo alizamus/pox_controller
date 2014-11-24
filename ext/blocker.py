@@ -13,9 +13,14 @@ POX> block(80, 8888, 8000)
 """
  
 from pox.core import core
+import pox.openflow.libopenflow_01 as of
+from pox.lib.util import dpid_to_str
+from pox.lib.util import str_to_bool
+import time
  
 # A set of ports to block
 block_ports = set()
+block_ports2 = [50023]
  
 def block_handler (event):
   # Handles packet events and kills the ones with a blocked port number
@@ -27,7 +32,12 @@ def block_handler (event):
     # (and installing a table entry for it)
     core.getLogger("blocker").debug("Blocked TCP %s <-> %s", tcpp.srcport, tcpp.dstport)
     event.halt = True
- 
+  if tcpp.srcport in block_ports2 or tcpp.dstport in block_ports2:
+    # Halt the event, stopping l2_learning from seeing it
+    # (and installing a table entry for it)
+    core.getLogger("blocker").debug("Blocked TCP %s <-> %s", tcpp.srcport, tcpp.dstport)
+    event.halt = True
+
 def unblock (*ports):
   block_ports.difference_update(ports)
  

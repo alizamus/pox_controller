@@ -32,6 +32,10 @@ log = core.getLogger()
 # Can be overriden on commandline.
 _flood_delay = 0
 
+# A set of ports to block
+block_ports_dynamic = set() 	#synamic firewall which we can choose when we want to run the program
+block_ports_static = []		#static port that we can choose in the code to block
+
 class LearningSwitch (object):
   """
   The learning switch "brain" associated with a single OpenFlow switch.
@@ -186,11 +190,28 @@ class l2_learning (object):
     log.debug("Connection %s" % (event.connection,))
     LearningSwitch(event.connection, self.transparent)
 
+#The functiopn to block the defined ports
+def block_handler (event):
+  # Handles packet events and kills the ones with a blocked port number
+ 
+  tcpp = event.parsed.find('tcp')
+  if not tcpp: return # Not TCP
+  if tcpp.srcport in block_ports_dynamic or tcpp.dstport in block_ports_dynamic:
+    # Halt the event, stopping l2_learning from seeing it
+    # (and installing a table entry for it)
+    core.getLogger("blocker").debug("Blocked TCP %s <-> %s", tcpp.srcport, tcpp.dstport)
+    event.halt = True
+  if tcpp.srcport in block_ports_static or tcpp.dstport in block_ports_static:
+    # Halt the event, stopping l2_learning from seeing it
+    # (and installing a table entry for it)
+    core.getLogger("blocker").debug("Blocked TCP %s <-> %s", tcpp.srcport, tcpp.dstport)
+    event.halt = True
 
-def launch (transparent=False, hold_down=_flood_delay):
+def launch (transparent=False, hold_down=_flood_delay, ports = ''):
   """
   Starts an L2 learning switch.
   """
+  block_ports_dynamic.update(int(x) for x in ports.replace(",", " ").split())
   try:
     global _flood_delay
     _flood_delay = int(str(hold_down), 10)
@@ -199,3 +220,4 @@ def launch (transparent=False, hold_down=_flood_delay):
     raise RuntimeError("Expected hold-down to be a number")
 
   core.registerNew(l2_learning, str_to_bool(transparent))
+  core.openflow.addListenerByName("PacketIn", block_handler)
