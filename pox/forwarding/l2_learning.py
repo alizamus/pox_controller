@@ -188,7 +188,11 @@ class l2_learning (object):
 
   def _handle_ConnectionUp (self, event):
     log.debug("Connection %s" % (event.connection,))
+    print "Switch %s has come up." % event.dpid
     LearningSwitch(event.connection, self.transparent)
+
+  def _handle_ConnectionDown (self, event):
+    print "Switch %s is Down" % event.dpid  
 
 #The functiopn to block the defined ports
 def block_handler (event):
