@@ -216,7 +216,7 @@ def block_handler (event):
     event.halt = True
 
 
-
+#This function can check for specific ip as destination.
 def flow_checker (event):
   #print ("salam")
   eth_packet = event.parsed
