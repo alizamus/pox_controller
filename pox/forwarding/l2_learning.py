@@ -176,6 +176,7 @@ class LearningSwitch (object):
         msg.actions.append(of.ofp_action_output(port = port))
         msg.data = event.ofp # 6a
         self.connection.send(msg)
+		
 
 
 class l2_learning (object):
@@ -192,12 +193,15 @@ class l2_learning (object):
     LearningSwitch(event.connection, self.transparent)
 
   def _handle_ConnectionDown (self, event):
-    print "Switch %s is Down" % event.dpid  
+    print "Switch %s is Down" % event.dpid
 
+
+
+
+   
 #The functiopn to block the defined ports
 def block_handler (event):
   # Handles packet events and kills the ones with a blocked port number
- 
   tcpp = event.parsed.find('tcp')
   if not tcpp: return # Not TCP
   if tcpp.srcport in block_ports_dynamic or tcpp.dstport in block_ports_dynamic:
@@ -210,6 +214,28 @@ def block_handler (event):
     # (and installing a table entry for it)
     core.getLogger("blocker").debug("Blocked TCP %s <-> %s", tcpp.srcport, tcpp.dstport)
     event.halt = True
+
+
+
+def flow_checker (event):
+  #print ("salam")
+  eth_packet = event.parsed
+  ip_packet = eth_packet.find('ipv4')
+  if ip_packet is None:
+    #print '_handle_PacketIn:: doesnt have ip_payload; eth_packet=%s' % eth_packet
+    return
+  srcip = (ip_packet.srcip).toStr()
+  dstip = (ip_packet.dstip).toStr()
+  #print "srcip= %s, dstip= %s" % (srcip, dstip)
+  if dstip == '10.0.2.2':
+	print "hello"
+
+
+
+
+
+
+
 
 def launch (transparent=False, hold_down=_flood_delay, ports = ''):
   """
@@ -225,3 +251,4 @@ def launch (transparent=False, hold_down=_flood_delay, ports = ''):
 
   core.registerNew(l2_learning, str_to_bool(transparent))
   core.openflow.addListenerByName("PacketIn", block_handler)
+  core.openflow.addListenerByName("PacketIn", flow_checker)
