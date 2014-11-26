@@ -95,6 +95,27 @@ class LearningSwitch (object):
     #log.debug("Initializing LearningSwitch, transparent=%s",
     #          str(self.transparent))
 
+    #This function can check for specific ip as destination.
+  def flow_checker (self, event):
+    eth_packet = event.parsed
+    ip_packet = eth_packet.find('ipv4')
+  
+    if ip_packet is None:
+      #print '_handle_PacketIn:: doesnt have ip_payload; eth_packet=%s' % eth_packet
+      return
+    srcip = (ip_packet.srcip).toStr()
+    dstip = (ip_packet.dstip).toStr()
+    protocol = ip_packet.protocol
+    #print '_handle_PacketIn:: rxed from sw_dpid=%s; srcip=%s, dstip=%s, protocol=%s' % 				(event.connection.dpid,srcip,dstip,protocol)
+    if protocol == 1: #icmp
+	   #print 'rxed icmp_packet=%s' % ip_packet.payload
+	    print("icmp")
+
+      #print "srcip= %s, dstip= %s" % (srcip, dstip)
+    if dstip == '10.0.2.2':
+	    print ("hello")
+
+
   def _handle_PacketIn (self, event):
     """
     Handle packet in messages from the switch to implement above algorithm.
@@ -149,8 +170,7 @@ class LearningSwitch (object):
         self.connection.send(msg)
 
     #This function can check for specific ip as destination.
-    def flow_checker (event):
-      #print ("salam")
+    def flow_checker (self, event):
       eth_packet = event.parsed
       ip_packet = eth_packet.find('ipv4')
   
@@ -200,7 +220,7 @@ class LearningSwitch (object):
         msg.actions.append(of.ofp_action_output(port = port))
         msg.data = event.ofp # 6a
         self.connection.send(msg)
-	flow_checker (event)
+	self.flow_checker(event)
 		
 
 
