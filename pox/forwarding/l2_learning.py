@@ -25,6 +25,7 @@ import pox.openflow.libopenflow_01 as of
 from pox.lib.util import dpid_to_str
 from pox.lib.util import str_to_bool
 import time
+from pox.lib.addresses import IPAddr
 
 log = core.getLogger()
 
@@ -109,41 +110,53 @@ class LearningSwitch (object):
 	    msg.data = event.ofp # 6a
 	    self.connection.send(msg)
 	    return
+    tcpp = event.parsed.find('tcp') 
 
     srcip = (ip_packet.srcip).toStr()
     dstip = (ip_packet.dstip).toStr()
     protocol = ip_packet.protocol
     if protocol == 1: #icmp
 	    print("icmp")
-    if dstip == '10.0.2.2' and event.dpid==1:
+    if dstip == '10.0.2.2' and event.dpid==3:
+	    """           		 
 	    msg = of.ofp_flow_mod()
 	    msg.match = of.ofp_match.from_packet(packet, event.port)
 	    msg.idle_timeout = 10
 	    msg.hard_timeout = 30
-	    msg.actions.append(of.ofp_action_output(port = 3))
+	    msg.actions.append(of.ofp_action_output(port = port))
 	    msg.data = event.ofp # 6a
 	    self.connection.send(msg)
-	    print ("hello")
+	    print ("hello1")
+	    print(packet.dst)
+	    """
+	    msg = of.ofp_flow_mod()
+	    msg.priority = 42
+	    msg.match.dl_type = 0x800
+	    msg.match.nw_dst = IPAddr("10.0.2.2")
+	    msg.actions.append(of.ofp_action_output(port = 1))
+	    self.connection.send(msg)
 	    return
     if dstip == '10.0.2.2' and event.dpid==2:
 	    msg = of.ofp_flow_mod()
 	    msg.match = of.ofp_match.from_packet(packet, event.port)
 	    msg.idle_timeout = 10
 	    msg.hard_timeout = 30
-	    msg.actions.append(of.ofp_action_output(port = 3))
+	    msg.actions.append(of.ofp_action_output(port = port))
 	    msg.data = event.ofp # 6a
 	    self.connection.send(msg)
-	    print ("hello")
+	    print ("hello2")
+	    print(packet.dst)
 	    return
-    if dstip == '10.0.2.2' and event.dpid==3:
+    if dstip == '10.0.2.2' and event.dpid==1: 
 	    msg = of.ofp_flow_mod()
 	    msg.match = of.ofp_match.from_packet(packet, event.port)
 	    msg.idle_timeout = 10
 	    msg.hard_timeout = 30
-	    msg.actions.append(of.ofp_action_output(port = 1))
+	    msg.actions.append(of.ofp_action_output(port = port))
 	    msg.data = event.ofp # 6a
 	    self.connection.send(msg)
-	    print ("hello")
+	    print ("hello3")
+	    print(packet.dst)
 	    return
     msg = of.ofp_flow_mod()
     msg.match = of.ofp_match.from_packet(packet, event.port)
@@ -251,12 +264,12 @@ class LearningSwitch (object):
 		# 6
 		log.debug("installing flow for %s.%i -> %s.%i" %
 		          (packet.src, event.port, packet.dst, port))
-		msg = of.ofp_flow_mod()
-		msg.match = of.ofp_match.from_packet(packet, event.port)
-		msg.idle_timeout = 10
-		msg.hard_timeout = 30
-		msg.actions.append(of.ofp_action_output(port = port))
-		msg.data = event.ofp # 6a
+		#msg = of.ofp_flow_mod()
+		#msg.match = of.ofp_match.from_packet(packet, event.port)
+		#msg.idle_timeout = 10
+		#msg.hard_timeout = 30
+		#msg.actions.append(of.ofp_action_output(port = port))
+		#msg.data = event.ofp # 6a
 		#self.connection.send(msg)
 		self.flow_checker(event, packet, port)
 		
