@@ -137,6 +137,7 @@ class LearningSwitch (object):
 	    self.connection.send(msg)
 	    return
     if dstip == '10.0.2.2' and event.dpid==2:
+	    """
 	    msg = of.ofp_flow_mod()
 	    msg.match = of.ofp_match.from_packet(packet, event.port)
 	    msg.idle_timeout = 10
@@ -146,8 +147,16 @@ class LearningSwitch (object):
 	    self.connection.send(msg)
 	    print ("hello2")
 	    print(packet.dst)
+	    """
+	    msg = of.ofp_flow_mod()
+	    msg.priority = 42
+	    msg.match.dl_type = 0x800
+	    msg.match.nw_dst = IPAddr("10.0.2.2")
+	    msg.actions.append(of.ofp_action_output(port = 3))
+	    self.connection.send(msg)
 	    return
-    if dstip == '10.0.2.2' and event.dpid==1: 
+    if dstip == '10.0.2.2' and event.dpid==1:
+	    """
 	    msg = of.ofp_flow_mod()
 	    msg.match = of.ofp_match.from_packet(packet, event.port)
 	    msg.idle_timeout = 10
@@ -157,6 +166,13 @@ class LearningSwitch (object):
 	    self.connection.send(msg)
 	    print ("hello3")
 	    print(packet.dst)
+	    """
+	    msg = of.ofp_flow_mod()
+	    msg.priority = 42
+	    msg.match.dl_type = 0x800
+	    msg.match.nw_dst = IPAddr("10.0.2.2")
+	    msg.actions.append(of.ofp_action_output(port = 3))
+	    self.connection.send(msg)
 	    return
     msg = of.ofp_flow_mod()
     msg.match = of.ofp_match.from_packet(packet, event.port)
