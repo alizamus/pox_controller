@@ -117,6 +117,19 @@ class LearningSwitch (object):
     protocol = ip_packet.protocol
     if protocol == 1: #icmp
 	    print("icmp")
+	    self.send_ofmod_forward(_called_from = 'packet_in',
+                              conn = event.connection,
+                              nw_src = srcip,
+                              nw_dst = dstip,
+                              nw_proto = protocol,
+                              tp_src = '-1',
+                              tp_dst = '-1',
+                              fport = of.OFPP_ALL,
+                              duration = [0,0],
+                              buffer_id = event.ofp.buffer_id )
+            print 'icmp rule is inserted!'
+	    return
+
     if dstip == '10.0.2.2' and event.dpid==3:
 	    """           		 
 	    msg = of.ofp_flow_mod()
@@ -133,7 +146,7 @@ class LearningSwitch (object):
 	    msg.priority = 42
 	    msg.match.dl_type = 0x800
 	    msg.match.nw_dst = IPAddr("10.0.2.2")
-	    msg.actions.append(of.ofp_action_output(port = 1))
+	    msg.actions.append(of.ofp_action_output(port = port))
 	    self.connection.send(msg)
 	    return
     if dstip == '10.0.2.2' and event.dpid==2:
@@ -152,7 +165,7 @@ class LearningSwitch (object):
 	    msg.priority = 42
 	    msg.match.dl_type = 0x800
 	    msg.match.nw_dst = IPAddr("10.0.2.2")
-	    msg.actions.append(of.ofp_action_output(port = 3))
+	    msg.actions.append(of.ofp_action_output(port = port))
 	    self.connection.send(msg)
 	    return
     if dstip == '10.0.2.2' and event.dpid==1:
@@ -171,7 +184,7 @@ class LearningSwitch (object):
 	    msg.priority = 42
 	    msg.match.dl_type = 0x800
 	    msg.match.nw_dst = IPAddr("10.0.2.2")
-	    msg.actions.append(of.ofp_action_output(port = 3))
+	    msg.actions.append(of.ofp_action_output(port = port))
 	    self.connection.send(msg)
 	    return
     msg = of.ofp_flow_mod()
@@ -181,6 +194,31 @@ class LearningSwitch (object):
     msg.actions.append(of.ofp_action_output(port = port))
     msg.data = event.ofp # 6a
     self.connection.send(msg)
+
+  def send_ofmod_forward(self, _called_from, conn, nw_src, nw_dst, nw_proto, tp_src,
+                         tp_dst, fport, duration, buffer_id = None):
+    msg = of.ofp_flow_mod()
+    #msg.match = of.ofp_match.from_packet(packet)
+    msg.priority = 0x7000
+    #msg.match = of.ofp_match(dl_type = pkt.ethernet.IP_TYPE, nw_proto = pkt.ipv4.UDP_PROTOCOL, nw_dst=IPAddr(nw_dst))
+    msg.match.dl_type = 0x800 # Ethertype / length (e.g. 0x0800 = IPv4)
+    msg.match.nw_src = IPAddr(nw_src)
+    msg.match.nw_dst = IPAddr(nw_dst)
+    msg.match.nw_proto = int(nw_proto) #17:UDP, 6:TCP
+    if tp_src != '-1':
+      msg.match.tp_src = int(tp_src)
+    if tp_dst != '-1':
+      msg.match.tp_dst = int(tp_dst)
+    msg.idle_timeout = duration[0]
+    msg.hard_timeout = duration[1]
+    #print "event.ofp.buffer_id: ", event.ofp.buffer_id
+    if _called_from == 'packet_in':
+      msg.buffer_id = buffer_id
+    msg.actions.append(of.ofp_action_output(port = fport))
+    conn.send(msg)
+    print '\nsend_ofmod_forward to sw_dpid=%s' % conn.dpid
+    print 'wcs: src_ip=%s, dst_ip=%s, nw_proto=%s, tp_src=%s, tp_dst=%s' % (nw_src,nw_dst,nw_proto,tp_src,tp_dst)
+    print 'acts: fport=%s\n' % fport
 
 
   def _handle_PacketIn (self, event):
