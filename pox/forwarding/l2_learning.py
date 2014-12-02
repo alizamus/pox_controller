@@ -26,6 +26,7 @@ from pox.lib.util import dpid_to_str
 from pox.lib.util import str_to_bool
 import time
 from pox.lib.addresses import IPAddr
+from pox.lib.addresses import EthAddr
 
 log = core.getLogger()
 
@@ -142,12 +143,14 @@ class LearningSwitch (object):
 	    print ("hello1")
 	    print(packet.dst)
 	    """
+	    
 	    msg = of.ofp_flow_mod()
 	    msg.priority = 42
 	    msg.match.dl_type = 0x800
-	    msg.match.nw_dst = IPAddr("10.0.2.2")
-	    msg.actions.append(of.ofp_action_output(port = 1))
+	    msg.match.dl_dst = EthAddr('00:00:00:01:02:00')
+	    msg.actions.append(of.ofp_action_output(port = 2))
 	    self.connection.send(msg)
+	    
 	    print("============================== 1")
 	    return
     if dstip == '10.0.2.2' and event.dpid==2:
@@ -162,15 +165,18 @@ class LearningSwitch (object):
 	    print ("hello2")
 	    print(packet.dst)
 	    """
+	    
 	    msg = of.ofp_flow_mod()
 	    msg.priority = 42
 	    msg.match.dl_type = 0x800
-	    msg.match.nw_dst = IPAddr("10.0.2.2")
-	    msg.actions.append(of.ofp_action_output(port = 2))
+	    msg.match.nw_dst = IPAddr('10.0.2.3')
+	    msg.match.dl_dst = EthAddr('00:00:00:01:02:03')
+	    msg.actions.append(of.ofp_action_output(port = 3))
 	    self.connection.send(msg)
+	    
 	    print("============================== 2")
 	    return
-    if dstip == '10.0.2.2' and event.dpid==1:
+    if dstip == '10.0.2.2' and event.dpid==1 and packet.src != "10.0.2.0":
 	    """
 	    msg = of.ofp_flow_mod()
 	    msg.match = of.ofp_match.from_packet(packet, event.port)
@@ -182,12 +188,14 @@ class LearningSwitch (object):
 	    print ("hello3")
 	    print(packet.dst)
 	    """
+            
 	    msg = of.ofp_flow_mod()
 	    msg.priority = 42
 	    msg.match.dl_type = 0x800
-	    msg.match.nw_dst = IPAddr("10.0.2.2")
-	    msg.actions.append(of.ofp_action_output(port = 3))
+	    msg.match.dl_dst = EthAddr('00:00:00:01:02:00')
+	    msg.actions.append(of.ofp_action_output(port = 1))
 	    self.connection.send(msg)
+	    
 	    print("============================== 3")
 	    return
     msg = of.ofp_flow_mod()

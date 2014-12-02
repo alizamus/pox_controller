@@ -37,9 +37,9 @@ class Simples (object):
 	  msg = of.ofp_flow_mod()
           match = of.ofp_match()
           match.in_port = in_port
-	  #match.dl_type = 0x0800
-	  #match.nw_proto = 6
-	  match.tp_dst = destport
+	  match.dl_type = 0x0800
+	  match.nw_proto = 6
+	  match.tp_src = destport
           msg.match = match
           msg.idle_timeout = 0
           msg.hard_timeout = 0
