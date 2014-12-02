@@ -146,8 +146,9 @@ class LearningSwitch (object):
 	    msg.priority = 42
 	    msg.match.dl_type = 0x800
 	    msg.match.nw_dst = IPAddr("10.0.2.2")
-	    msg.actions.append(of.ofp_action_output(port = port))
+	    msg.actions.append(of.ofp_action_output(port = 1))
 	    self.connection.send(msg)
+	    print("============================== 1")
 	    return
     if dstip == '10.0.2.2' and event.dpid==2:
 	    """
@@ -165,8 +166,9 @@ class LearningSwitch (object):
 	    msg.priority = 42
 	    msg.match.dl_type = 0x800
 	    msg.match.nw_dst = IPAddr("10.0.2.2")
-	    msg.actions.append(of.ofp_action_output(port = port))
+	    msg.actions.append(of.ofp_action_output(port = 2))
 	    self.connection.send(msg)
+	    print("============================== 2")
 	    return
     if dstip == '10.0.2.2' and event.dpid==1:
 	    """
@@ -184,8 +186,9 @@ class LearningSwitch (object):
 	    msg.priority = 42
 	    msg.match.dl_type = 0x800
 	    msg.match.nw_dst = IPAddr("10.0.2.2")
-	    msg.actions.append(of.ofp_action_output(port = port))
+	    msg.actions.append(of.ofp_action_output(port = 3))
 	    self.connection.send(msg)
+	    print("============================== 3")
 	    return
     msg = of.ofp_flow_mod()
     msg.match = of.ofp_match.from_packet(packet, event.port)
