@@ -17,8 +17,9 @@ class Simples (object):
     #self._install(event.connection.dpid,1,(2,3))
     #self._install(event.connection.dpid,2,(1,3))
     #self._install(event.connection.dpid,3,(1,2))
-    self._my_install(event.connection.dpid,1,3,50023)
-    self._my_install2(event.connection.dpid,3,1,50023)
+    #self._my_install(event.connection.dpid,1,3,50023)
+    #self._my_install2(event.connection.dpid,3,1,50023)
+    self._my_install_change(event.connection.dpid,1,4,50023)
 
   def _my_install(self,switch,in_port,out_port,dstport):
 	  msg = of.ofp_flow_mod()
@@ -40,6 +41,20 @@ class Simples (object):
 	  match.dl_type = 0x0800
 	  match.nw_proto = 6
 	  match.tp_src = srcport
+          msg.match = match
+          msg.idle_timeout = 0
+          msg.hard_timeout = 0
+          msg.actions.append(of.ofp_action_output(port = out_port))
+          core.openflow.sendToDPID(switch,msg)
+
+  def _my_install_change(self,switch,in_port,out_port,dstport):
+	  msg = of.ofp_flow_mod()
+          match = of.ofp_match()
+          match.in_port = in_port
+	  match.dl_type = 0x0800
+	  match.nw_proto = 6
+	  match.set_nw_dst("10.0.2.4")
+	  match.tp_dst = dstport
           msg.match = match
           msg.idle_timeout = 0
           msg.hard_timeout = 0
