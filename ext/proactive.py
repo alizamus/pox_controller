@@ -23,8 +23,8 @@ class Simples (object):
     #self._install(event.connection.dpid,3,(1,2))
     #self._my_install(event.connection.dpid,1,3,50023)
     #self._my_install_change2(event.connection.dpid,4,1,50023)
-    self._my_install_change(event.connection.dpid,1,4,50023)
-    self._my_install_change2(event.connection.dpid,4,1,50023)
+    self._my_install_change(switch = event.connection.dpid, in_port = 1, out_port = 4, dstport = 50023)
+    self._my_install_change2(switch = event.connection.dpid,in_port = 4, out_port = 1, srcport = 50023)
 
   def _my_install(self,switch,in_port,out_port,dstport):
 	  msg = of.ofp_flow_mod()
