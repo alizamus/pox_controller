@@ -12,13 +12,17 @@ table = {}
 class Simples (object):
   def __init__ (self):
     core.openflow.addListeners(self)
+
+  def _handle_PacketIn (self, event):
+	print ("=======================")
+	
        
   def _handle_ConnectionUp (self, event):
     #self._install(event.connection.dpid,1,(2,3))
     #self._install(event.connection.dpid,2,(1,3))
     #self._install(event.connection.dpid,3,(1,2))
-    #self._my_install(event.connection.dpid,1,3,50023)
-    #self._my_install2(event.connection.dpid,3,1,50023)
+    self._my_install(event.connection.dpid,1,3,50023)
+    self._my_install2(event.connection.dpid,3,1,50023)
     self._my_install_change(event.connection.dpid,1,4,50023)
 
   def _my_install(self,switch,in_port,out_port,dstport):
