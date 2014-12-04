@@ -46,50 +46,57 @@ class Simples (object):
 					host_receive = "p4", 
 					host_forward = "p5",
 					port_connection = 50023)
+	   
+            """
 	    self._my_install_change_new(switch = event.connection.dpid,
 				    out_port = 1, 
 				    srcport = 50023,
-				    ipaddr = '10.0.2.3',
-				    macaddr = '00:00:00:01:02:03')
+				    src_ip = "10.0.2.4",
+				    dst_ip = "10.0.2.1",
+				    new_ipaddr = "10.0.2.3",
+				    new_macaddr = '00:00:00:01:02:03')
 	    
 	    self._my_install_change_new2(switch = event.connection.dpid, 
 				     out_port = 4, 
 				     dstport = 50023,
-				     ipaddr = '10.0.2.4',
-				     macaddr = '00:00:00:01:02:04')
+				     src_ip = "10.0.2.1", 
+				     dst_ip = "10.0.2.3",
+				     new_ipaddr = '10.0.2.4',
+				     new_macaddr = '00:00:00:01:02:04')
+	    """
 	    
-  def _my_install_change_new(self,switch,out_port,srcport,ipaddr,macaddr):
+  def _my_install_change_new(self,switch,out_port,srcport,src_ip,dst_ip,new_ipaddr,new_macaddr):
   	    msg = of.ofp_flow_mod()
             match = of.ofp_match()
             match.in_port = None
 	    match.dl_type = 0x0800
 	    match.nw_proto = 6
-	    match.nw_src = "10.0.2.4"
-	    match.nw_dst = "10.0.2.1"
+	    match.nw_src = src_ip
+	    match.nw_dst = dst_ip
 	    match.tp_src = srcport
             msg.match = match
             msg.idle_timeout = 0
             msg.hard_timeout = 0
-	    msg.actions.append(of.ofp_action_nw_addr(nw_addr = IPAddr(ipaddr), type=6))  #type={6:mod_nw_src, 7:mod_nw_dst}
-	    msg.actions.append(of.ofp_action_dl_addr(dl_addr = EthAddr(macaddr), type=4))#type={4:mod_dl_src, 5:mod_dl_dst}
+	    msg.actions.append(of.ofp_action_nw_addr(nw_addr = IPAddr(new_ipaddr), type=6))  #type={6:mod_nw_src, 7:mod_nw_dst}
+	    msg.actions.append(of.ofp_action_dl_addr(dl_addr = EthAddr(new_macaddr), type=4))#type={4:mod_dl_src, 5:mod_dl_dst}
             msg.actions.append(of.ofp_action_output(port = out_port))
             core.openflow.sendToDPID(switch,msg)
 
 
-  def _my_install_change_new2(self,switch,out_port,dstport,ipaddr,macaddr):
+  def _my_install_change_new2(self,switch,out_port,dstport,src_ip,dst_ip,new_ipaddr,new_macaddr):
   	    msg = of.ofp_flow_mod()
             match = of.ofp_match()
             match.in_port = None
 	    match.dl_type = 0x0800
 	    match.nw_proto = 6
-	    match.nw_src = "10.0.2.1"
-	    match.nw_dst = "10.0.2.3"
+	    match.nw_src = src_ip
+	    match.nw_dst = dst_ip
 	    match.tp_dst = dstport
             msg.match = match
             msg.idle_timeout = 0
             msg.hard_timeout = 0
-	    msg.actions.append(of.ofp_action_nw_addr(nw_addr = IPAddr(ipaddr), type=7))  #type={6:mod_nw_src, 7:mod_nw_dst}
-	    msg.actions.append(of.ofp_action_dl_addr(dl_addr = EthAddr(macaddr), type=5))#type={4:mod_dl_src, 5:mod_dl_dst}
+	    msg.actions.append(of.ofp_action_nw_addr(nw_addr = IPAddr(new_ipaddr), type=7))  #type={6:mod_nw_src, 7:mod_nw_dst}
+	    msg.actions.append(of.ofp_action_dl_addr(dl_addr = EthAddr(new_macaddr), type=5))#type={4:mod_dl_src, 5:mod_dl_dst}
             msg.actions.append(of.ofp_action_output(port = out_port))
             core.openflow.sendToDPID(switch,msg)
 
@@ -115,13 +122,21 @@ class Simples (object):
 			if row[0] == host_forward :
 				ip_host_forward = row[1]
 				mac_host_forward = row[2]
-		print (ip_host_send)
-		print (mac_host_send)
-		print (ip_host_receive)
-		print (mac_host_receive)
-		print (ip_host_forward)
-		print (mac_host_forward)
-		
+	self._my_install_change_new(switch = 2,
+		out_port = 1, 
+		srcport = port_connection,
+		src_ip = ip_host_forward,
+		dst_ip = ip_host_send,
+		new_ipaddr = ip_host_receive,
+		new_macaddr = mac_host_receive)
+
+	self._my_install_change_new2(switch = 2, 
+		out_port = 4, 
+		dstport = port_connection,
+		src_ip = ip_host_send, 
+		dst_ip = ip_host_receive,
+		new_ipaddr = ip_host_forward,
+		new_macaddr = mac_host_forward)
 	
   
 def launch ():
