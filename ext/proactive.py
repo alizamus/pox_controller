@@ -10,11 +10,29 @@ log = core.getLogger()
 table = {}
 
 class Simples (object):
-  def __init__ (self):
-    core.openflow.addListeners(self)
+  def __init__ (self, connection):
+    self.connection = connection
+    connection.addListeners(self)
 
   def _handle_PacketIn (self, event):
-	print ("=======================")
+	eth_packet = event.parsed
+	ip_packet = eth_packet.find('ipv4')
+	if ip_packet is None:
+		return
+	protocol = ip_packet.protocol
+	if protocol == 1: #icmp
+		packet_in = event.ofp # The actual ofp_packet_in message.
+
+		msg = of.ofp_packet_out()
+		msg.buffer_id = event.ofp.buffer_id
+		msg.in_port = packet_in.in_port
+
+		# Add an action to send to the specified port
+		action = of.ofp_action_output(port = of.OFPP_FLOOD)
+		msg.actions.append(action)
+	        # Send message to switch
+        	self.connection.send(msg)
+		return
 	
        
   def _handle_ConnectionUp (self, event):
@@ -108,4 +126,10 @@ class Simples (object):
 
 
 def launch ():
-  core.registerNew(Simples)
+    def start_switch (event):
+        Simples(event.connection)
+    
+    core.openflow.addListenerByName("ConnectionUp", start_switch)
+
+
+    #core.registerNew(Simples)
