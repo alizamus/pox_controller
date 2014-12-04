@@ -5,9 +5,12 @@ from pox.lib.util import str_to_bool
 import time
 from pox.lib.addresses import IPAddr
 from pox.lib.addresses import EthAddr
+import csv
+import sys
 
 log = core.getLogger()
 table = {}
+
 
 class Simples (object):
   def __init__ (self, connection):
@@ -36,13 +39,13 @@ class Simples (object):
 	
        
   def _handle_ConnectionUp (self, event):
-    #self._install(event.connection.dpid,1,(2,3))
-    #self._install(event.connection.dpid,2,(1,3))
-    #self._install(event.connection.dpid,3,(1,2))
-    #self._my_install(event.connection.dpid,1,3,50023)
-    #self._my_install_change2(event.connection.dpid,4,1,50023)
+
     if event.dpid == 2:
-	    
+	    self._my_rule_installation(switch = event.dpid, 
+					host_send = "p2", 
+					host_receive = "p4", 
+					host_forward = "p5",
+					port_connection = 50023)
 	    self._my_install_change_new(switch = event.connection.dpid,
 				    out_port = 1, 
 				    srcport = 50023,
@@ -98,22 +101,29 @@ class Simples (object):
   host_receiver = host that we want to send data to
   host_forward = host that actually data forwarded to it
   port_connection = port number that we want to use for connection
-   
-  def _my_rule_installation(self, switch, host_send, host_receiver, host_forward, port_connection):
-	    self._my_install_change(switch = event.connection.dpid,
-	 			    in_port = 1, 
-				    out_port = 4, 
-				    dstport = 50023,
-				    ipaddr = '10.0.2.4',
-				    macaddr = '00:00:00:01:02:04')
-	    self._my_install_change2(switch = event.connection.dpid,
-				     in_port = 4, 
-				     out_port = 1, 
-				     srcport = 50023,
-				     ipaddr = '10.0.2.3',
-				     macaddr = '00:00:00:01:02:03')
-	
   """
+  def _my_rule_installation(self, switch, host_send, host_receive, host_forward, port_connection):
+	with open('/home/ubuntu/mininet/custom/staticmapping.csv', 'rb') as csvfile:
+		mapping = csv.reader(csvfile, delimiter=';', quotechar='|')
+		for row in mapping:
+			if row[0] == host_send :
+				ip_host_send = row[1]
+				mac_host_send = row[2]
+			if row[0] == host_receive :
+				ip_host_receive = row[1]
+				mac_host_receive = row[2]
+			if row[0] == host_forward :
+				ip_host_forward = row[1]
+				mac_host_forward = row[2]
+		print (ip_host_send)
+		print (mac_host_send)
+		print (ip_host_receive)
+		print (mac_host_receive)
+		print (ip_host_forward)
+		print (mac_host_forward)
+		
+	
+  
 def launch ():
     def start_switch (event):
         Simples(event.connection)
