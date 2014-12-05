@@ -44,7 +44,7 @@ class Simples (object):
 		rules = csv.reader(csvfile, delimiter=';', quotechar='|')
 		for row in rules:
 			if event.dpid == int (row[0]):
-			    self._my_rule_installation(switch = int (row[0]), 
+			    self._my_rule_installation(switch = row[0], 
 							host_send = row[1], 
 							host_receive = row[2], 
 							host_forward = row[3],
@@ -122,16 +122,33 @@ class Simples (object):
 				mac_host_forward = row[2]
 				switch_host_forward = int (row[3])
 				switch_port_host_forward = int (row[4])
-	self._my_install_change_new(switch = switch,
-		out_port = switch_port_host_send, 
+
+
+
+
+	with open('/home/ubuntu/pox/ext/port_forwarding.csv', 'rb') as csvfile:
+		port_handling = csv.reader(csvfile, delimiter=';', quotechar='|')
+		for row in port_handling:
+			if row[0] == switch:
+				if row[1] == host_forward:
+					if row[2] == host_send:
+						forward_to_send_port = int (row[3])
+				if row[1] == host_send:
+					if row[2] == host_forward:
+						send_to_forward_port = int (row[3])
+
+
+
+	self._my_install_change_new(switch = int (switch),
+		out_port = forward_to_send_port, 
 		srcport = port_connection,
 		src_ip = ip_host_forward,
 		dst_ip = ip_host_send,
 		new_ipaddr = ip_host_receive,
 		new_macaddr = mac_host_receive)
 
-	self._my_install_change_new2(switch = switch, 
-		out_port = switch_port_host_forward, 
+	self._my_install_change_new2(switch = int (switch), 
+		out_port = send_to_forward_port, 
 		dstport = port_connection,
 		src_ip = ip_host_send, 
 		dst_ip = ip_host_receive,
