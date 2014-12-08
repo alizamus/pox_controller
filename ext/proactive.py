@@ -39,7 +39,7 @@ class Simples (object):
 	
        
   def _handle_ConnectionUp (self, event):
-
+	
 	with open('/home/ubuntu/pox/ext/rules.csv', 'rb') as csvfile:
 		rules = csv.reader(csvfile, delimiter=';', quotechar='|')
 		for row in rules:
@@ -49,15 +49,19 @@ class Simples (object):
 							host_receive = row[2], 
 							host_forward = row[3],
 							port_connection = int(row[4]))				
+	
 
-	"""
-        if event.dpid == 2:
-	    self._my_rule_installation(switch = event.dpid, 
-					host_send = "p2", 
-					host_receive = "p4", 
-					host_forward = "p5",
-					port_connection = 50023)
-	"""
+
+	with open('/home/ubuntu/pox/ext/rules_scp.csv', 'rb') as csvfile:
+		rules_scp = csv.reader(csvfile, delimiter=';', quotechar='|')
+		for row in rules_scp:
+			if event.dpid == int (row[0]):
+			    self._my_rule_installation_scp(switch = row[0], 
+							   host_send = row[1], 
+							   host_receive = row[2], 
+							   host_forward = row[3],
+							   port_connection = int(row[4]))	
+	
 	    
   def _my_install_change_new(self,switch,out_port,srcport,src_ip,dst_ip,new_ipaddr,new_macaddr):
   	    msg = of.ofp_flow_mod()
@@ -155,7 +159,68 @@ class Simples (object):
 		new_ipaddr = ip_host_forward,
 		new_macaddr = mac_host_forward)
 	
-  
+  """
+  This function is used for rule installation for scp on the switches.
+  inputs to this function
+  switch = switch number that we want to install the rule
+  host_send = host that want to send the data
+  host_receiver = host that we want to send data to
+  host_forward = host that actually data forwarded to it
+  port_connection = port number that we want to use for connection
+  """
+  def _my_rule_installation_scp(self, switch, host_send, host_receive, host_forward, port_connection):
+	with open('/home/ubuntu/pox/ext/staticmapping.csv', 'rb') as csvfile:
+		mapping = csv.reader(csvfile, delimiter=';', quotechar='|')
+		for row in mapping:
+			if row[0] == host_send :
+				ip_host_send = row[1]
+				mac_host_send = row[2]
+				switch_host_send = int (row[3])
+				switch_port_host_send = int (row[4])
+			if row[0] == host_receive :
+				ip_host_receive = row[1]
+				mac_host_receive = row[2]
+				switch_host_receive = int (row[3])
+				switch_port_host_receive = int (row[4])
+			if row[0] == host_forward :
+				ip_host_forward = row[1]
+				mac_host_forward = row[2]
+				switch_host_forward = int (row[3])
+				switch_port_host_forward = int (row[4])
+
+
+
+
+	with open('/home/ubuntu/pox/ext/port_forwarding.csv', 'rb') as csvfile:
+		port_handling = csv.reader(csvfile, delimiter=';', quotechar='|')
+		for row in port_handling:
+			if row[0] == switch:
+				if row[1] == host_forward:
+					if row[2] == host_send:
+						forward_to_send_port = int (row[3])
+				if row[1] == host_send:
+					if row[2] == host_forward:
+						send_to_forward_port = int (row[3])
+
+
+
+	self._my_install_change_new2(switch = int (switch),
+		out_port = send_to_forward_port, 
+		dstport = port_connection,
+		src_ip = ip_host_send,
+		dst_ip = ip_host_receive,
+		new_ipaddr = ip_host_forward,
+		new_macaddr = mac_host_forward)
+
+	self._my_install_change_new(switch = int (switch), 
+		out_port = forward_to_send_port, 
+		srcport = port_connection,
+		src_ip = ip_host_forward, 
+		dst_ip = ip_host_send,
+		new_ipaddr = ip_host_receive,
+		new_macaddr = mac_host_receive)
+	
+
 def launch ():
     def start_switch (event):
         Simples(event.connection)
