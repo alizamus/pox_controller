@@ -52,15 +52,16 @@ class Simples (object):
 	
 
 
-	with open('/home/ubuntu/pox/ext/rules_scp.csv', 'rb') as csvfile:
-		rules_scp = csv.reader(csvfile, delimiter=';', quotechar='|')
-		for row in rules_scp:
+	with open('/home/ubuntu/pox/ext/generalrules.csv', 'rb') as csvfile:
+		generalrules = csv.reader(csvfile, delimiter=';', quotechar='|')
+		for row in generalrules:
 			if event.dpid == int (row[0]):
-			    self._my_rule_installation_scp(switch = row[0], 
+			    self._my_rule_installation_general(switch = row[0], 
 							   host_send = row[1], 
 							   host_receive = row[2], 
 							   host_forward = row[3],
-							   port_connection = int(row[4]))	
+							   port_connection = None)
+	
 	
 	    
   def _my_install_change_new(self,switch,out_port,srcport,src_ip,dst_ip,new_ipaddr,new_macaddr):
@@ -160,7 +161,7 @@ class Simples (object):
 		new_macaddr = mac_host_forward)
 	
   """
-  This function is used for rule installation for scp on the switches.
+  This function is used for rule installation for general on the switches.
   inputs to this function
   switch = switch number that we want to install the rule
   host_send = host that want to send the data
@@ -168,7 +169,7 @@ class Simples (object):
   host_forward = host that actually data forwarded to it
   port_connection = port number that we want to use for connection
   """
-  def _my_rule_installation_scp(self, switch, host_send, host_receive, host_forward, port_connection):
+  def _my_rule_installation_general(self, switch, host_send, host_receive, host_forward, port_connection):
 	with open('/home/ubuntu/pox/ext/staticmapping.csv', 'rb') as csvfile:
 		mapping = csv.reader(csvfile, delimiter=';', quotechar='|')
 		for row in mapping:

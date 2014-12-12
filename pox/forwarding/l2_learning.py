@@ -195,8 +195,6 @@ class LearningSwitch (object):
 	    msg.match.dl_dst = EthAddr('00:00:00:01:02:00')
 	    msg.actions.append(of.ofp_action_output(port = 1))
 	    self.connection.send(msg)
-	    
-	    print("============================== 3")
 	    return
     msg = of.ofp_flow_mod()
     msg.match = of.ofp_match.from_packet(packet, event.port)
@@ -329,14 +327,14 @@ class LearningSwitch (object):
 		# 6
 		log.debug("installing flow for %s.%i -> %s.%i" %
 		          (packet.src, event.port, packet.dst, port))
-		#msg = of.ofp_flow_mod()
-		#msg.match = of.ofp_match.from_packet(packet, event.port)
-		#msg.idle_timeout = 10
-		#msg.hard_timeout = 30
-		#msg.actions.append(of.ofp_action_output(port = port))
-		#msg.data = event.ofp # 6a
-		#self.connection.send(msg)
-		self.flow_checker(event, packet, port)
+		msg = of.ofp_flow_mod()
+		msg.match = of.ofp_match.from_packet(packet, event.port)
+		msg.idle_timeout = 10
+		msg.hard_timeout = 30
+		msg.actions.append(of.ofp_action_output(port = port))
+		msg.data = event.ofp # 6a
+		self.connection.send(msg)
+		#self.flow_checker(event, packet, port)
 		
 
 
