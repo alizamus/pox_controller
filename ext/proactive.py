@@ -11,6 +11,7 @@ import sys
 log = core.getLogger()
 table = {}
 
+states = [0,0,0,0]
 
 class Simples (object):
   def __init__ (self, connection):
@@ -25,7 +26,6 @@ class Simples (object):
 	protocol = ip_packet.protocol
 	if protocol == 1: #icmp
 		packet_in = event.ofp # The actual ofp_packet_in message.
-
 		msg = of.ofp_packet_out()
 		msg.buffer_id = event.ofp.buffer_id
 		msg.in_port = packet_in.in_port
