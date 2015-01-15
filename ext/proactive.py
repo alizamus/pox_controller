@@ -88,6 +88,19 @@ class Simples (object):
 			    match.in_port = None
 			    match.dl_type = 0x0800
 			    match.nw_proto = 6
+			    match.nw_src = IPAddr("10.0.2.0")
+			    match.nw_dst = IPAddr("10.0.2.1")
+			    match.tp_src = 50023
+			    msg.match = match
+			    msg.idle_timeout = 0
+			    msg.hard_timeout = 0
+			    event.connection.send(msg)
+
+		  	    msg = of.ofp_flow_mod(command=of.OFPFC_DELETE)
+			    match = of.ofp_match()
+			    match.in_port = None
+			    match.dl_type = 0x0800
+			    match.nw_proto = 6
 			    match.nw_src = IPAddr("10.0.2.1")
 			    match.nw_dst = IPAddr("10.0.2.2")
 			    match.tp_dst = 50023
