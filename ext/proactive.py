@@ -7,6 +7,10 @@ from pox.lib.addresses import IPAddr
 from pox.lib.addresses import EthAddr
 import csv
 import sys
+import pox.lib.packet as pkt
+
+
+
 
 log = core.getLogger()
 table = {}
@@ -19,12 +23,25 @@ class Simples (object):
     connection.addListeners(self)
 
   def _handle_PacketIn (self, event):
+	packet = event.parsed
 	eth_packet = event.parsed
 	ip_packet = eth_packet.find('ipv4')
 	if ip_packet is None:
 		return
 	protocol = ip_packet.protocol
 	if protocol == 1: #icmp
+		
+		print (event.connection.dpid)
+		"""
+		print (ip_packet.srcip)
+		print (ip_packet.dstip)
+		print (ip_packet.tos)
+		print (ip_packet.id)
+		print (ip_packet.flags)
+		print (ip_packet.frag)
+		print (ip_packet.ttl)
+		print (ip_packet.protocol)
+		print (ip_packet.csum)
 		packet_in = event.ofp # The actual ofp_packet_in message.
 		msg = of.ofp_packet_out()
 		msg.buffer_id = event.ofp.buffer_id
@@ -35,6 +52,35 @@ class Simples (object):
 		msg.actions.append(action)
 	        # Send message to switch
         	self.connection.send(msg)
+		"""
+	        icmp = pkt.icmp()
+	        icmp.type = pkt.TYPE_ECHO_REPLY
+    	        icmp.payload = packet.find("icmp").payload
+
+	        # Make the IP packet around it
+	        ipp = pkt.ipv4()
+	        ipp.protocol = ipp.ICMP_PROTOCOL
+	        ipp.srcip = packet.find("ipv4").dstip
+	        ipp.dstip = packet.find("ipv4").srcip
+
+	        # Ethernet around that...
+	        e = pkt.ethernet()
+	        e.src = packet.dst
+	        e.dst = packet.src
+	        e.type = e.IP_TYPE
+
+	        # Hook them up...
+	        ipp.payload = icmp
+	        e.payload = ipp
+
+	        # Send it back to the input port
+	        msg = of.ofp_packet_out()
+	        msg.actions.append(of.ofp_action_output(port = of.OFPP_IN_PORT))
+	        msg.data = e.pack()
+	        msg.in_port = event.port
+	        event.connection.send(msg)
+
+	        log.debug("%s pinged %s", ipp.dstip, ipp.srcip)
 		return
 	
        
