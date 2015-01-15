@@ -80,7 +80,22 @@ class Simples (object):
 	        msg.in_port = event.port
 	        event.connection.send(msg)
 
-	        log.debug("%s pinged %s", ipp.dstip, ipp.srcip)
+	        #log.debug("%s pinged %s", ipp.dstip, ipp.srcip)
+		#deleting rules test
+		if (ip_packet.srcip == IPAddr("10.0.2.1")):
+		  	    msg = of.ofp_flow_mod(command=of.OFPFC_DELETE)
+			    match = of.ofp_match()
+			    match.in_port = None
+			    match.dl_type = 0x0800
+			    match.nw_proto = 6
+			    match.nw_src = IPAddr("10.0.2.1")
+			    match.nw_dst = IPAddr("10.0.2.2")
+			    match.tp_dst = 50023
+			    msg.match = match
+			    msg.idle_timeout = 0
+			    msg.hard_timeout = 0
+			    event.connection.send(msg)
+			    	
 		return
 	
        
